@@ -1,0 +1,65 @@
+{% extends 'layouts/testbase.html' %}
+{% block content %}
+
+  <div class="container py-4">
+    <div class="row mb-4">
+      <div class="col">
+        <h1 class="text-primary fw-bold">Student Dashboard</h1>
+        <p class="text-muted">Welcome back, {{session['fname']}} {{session['lname']}}. Access your academic resources and performance data.</p>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col">
+        <div class="alert alert-info border-start border-4 border-primary">
+          <h4 class="alert-heading text-primary">Important Announcement</h4>
+          <p>Peer evaluations for this semester are now available. Please complete them by November 30, 2023.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Peer Evaluations Card -->
+      <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Peer Evaluations</h5>
+          </div>
+          <div class="card-body">
+            <p>Review and submit peer evaluations for your team members.</p>
+            <ul class="list-group">
+              {% for eval in evalLinks %}
+              <span><strong>{{eval["CourseName"]}}</strong> - {{eval["GroupName"]}}</span>
+              {% if eval["Days_Until_Due"] < 0 %}
+              <span class="badge bg-danger">Overdue {{eval["Days_Until_Due"]}}</span>
+              {% elif eval["Days_Until_Due"] > 0 %}
+              <span class="badge bg-warning text-dark"><a href="{{url_for('eval', eid=eval['Evaluation_ID'], gid=eval['Group_ID'])}}" style="text-decoration:none">{{eval["Days_Until_Due"]}} days remaining</a></span>
+              {% else %}
+              <span class="badge bg-success"><a href="{{url_for('eval', eid=eval['Evaluation_ID'], gid=eval['Group_ID'])}}" style="text-decoration:none">{{eval["Days_Until_Due"]}} days remaining</a></span>
+              {% endif %}
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Analytics Card -->
+      <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Performance Analytics</h5>
+          </div>
+          <div class="card-body">
+            <p>View your peer evaluation scores and feedback.</p>
+            <h6 class="text-primary mb-3">Average Peer Evaluation Score: 78</h6>
+            <div class="bg-light p-3 rounded text-center" style="height: 200px;">
+              <p class="text-muted">[Bar Chart Placeholder]</p>
+            </div>
+            <button class="btn text-white w-100" style="background-color: #B6985A;">View Detailed Analytics</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}

@@ -1,0 +1,82 @@
+{% extends 'layouts/testbase.html' %}
+{% block content %}
+  <!-- Main Content -->
+  <div class="container my-4">
+    <div class="row">
+      <div class="col">
+        <h1 class="fw-bold text-primary" style="font-size: 32px;">Professor Dashboard</h1>
+        <p class="text-muted">Welcome back, Professor {{session['fname']}} {{session['lname']}}. Manage your courses, student groups, and peer evaluations.</p>
+      </div>
+    </div>
+
+    <div class="row mt-3">
+      <div class="col">
+        <div class="alert alert-info border-start border-4" style="border-left-color: rgb(0, 51, 102); background-color: #e1f5fe;">
+          <strong>Important Announcement</strong>
+          <p class="mb-0">End-of-semester peer evaluations need to be scheduled by December 10, 2025.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <!-- Students & Courses -->
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 border">
+          <div class="card-header text-white fw-bold" style="background-color: #003366;">Students & Courses</div>
+          <div class="card-body">
+            <p class="card-text">Add and manage students and courses for the current semester.</p>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item py-2"><strong>Active Courses: {{activeCourses}}</strong></li>
+              <li class="list-group-item py-2"><strong>Total Students: {{totalStudents}}</strong></li>
+              <li class="list-group-item py-2"><strong>Last Updated: Oct 15, 2025</strong></li>
+            </ul>
+          <a class="btn w-100 mt-3" style="background-color: #C49B34; border-color: #C49B34;" href="{{url_for('student_course_mgr')}}">Manage Students & Courses</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Groups -->
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 border">
+          <div class="card-header text-white fw-bold" style="background-color: #003366;">Student Groups</div>
+          <div class="card-body">
+            <p class="card-text">Create and manage student project groups within your courses.</p>
+            <ul class="list-group list-group-flush">
+
+            {% for course in courses %}
+              <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                {{course['CourseCode']}} {{course['CourseName']}} <span class="badge bg-success">{{course['GroupCount']}} Groups</span>
+              </li>
+            {% endfor %}
+            </ul>
+            <a class="btn w-100 mt-3" style="background-color: #C49B34; border-color: #C49B34;" href="{{url_for('student_group_mgr')}}">Manage Student Groups</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Peer Evaluations -->
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 border">
+          <div class="card-header text-white fw-bold" style="background-color: #003366;">Peer Evaluations</div>
+          <div class="card-body">
+            <p class="card-text">Schedule and monitor peer evaluations for your courses.</p>
+            <ul class="list-group list-group-flush">
+              {% for evaluation in evaluations %}
+              {% if evaluation['HasActiveEvaluation'] == 0 %}
+              <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                {{evaluation['CourseCode']}} {{evaluation['CourseName']}} <span class="badge bg-warning">Not Active</span>
+              </li>
+              {% elif evaluation['HasActiveEvaluation'] == 1 %}
+              <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                {{evaluation['CourseCode']}} {{evaluation['CourseName']}} <span class="badge bg-success">Evaluations Active</span>
+              </li>
+              {% endif %}
+              {% endfor %}
+            </ul>
+            <a class="btn w-100 mt-3" style="background-color: #C49B34; border-color: #C49B34;" href="{{url_for('evaluationScheduler')}}">Manage Peer Evaluations</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

@@ -1,0 +1,135 @@
+{% extends 'layouts/testbase.html' %}
+{% block content %}
+
+<div style="margin: 5%;padding: 0px;">
+  <h1 style="width: 100%;height: 10%;">Import Students</h1>
+
+  <!-- student add section  -->
+
+  <div style="margin: 3%;border-style: solid;border-color: #8a704c;">
+    <div class="accordion" id="accordionExample">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" style="background-color: #141C52; color: white;">
+            Batch Upload
+          </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+          <div class="accordion-body">
+            <form action="{{url_for('student_course_mgr')}}" method="POST" enctype="multipart/form-data">
+              <div class="input-group mb-3">
+                  <input type="file" class="form-control" name="file" accept=".csv" required>
+                  <button type="submit" class="input-group-text">Upload CSV</button>
+              </div>
+            </form>
+            
+            {% if data %}
+              <div class="table-responsive">
+                  <table class="table">
+                      <thead>
+                          <tr>
+                              <th>First Name</th>
+                              <th>Last Name</th>
+                              <th>Email</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                        {% for row in data %}
+                        <tr>
+                        {% for cell in row %}
+                          <td>{{ cell }}</td>
+                        {% endfor %}
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                  </table>
+              </div>
+              <form action="{{url_for('postBatchStudents')}}" method="POST">
+                <label for="classSelect"><strong>Enrolled Course</strong>- Submit if information looks correct</label>
+                <select class="form-select form-select-lg mb-3" name="classSelect">
+                  {% for class in classes %}
+                  <option value="{{class['Course_ID']}}">{{class['CourseCode']}}</option>
+                  {% endfor %}
+                </select>
+              <button type="submit" class="btn btn-primary" style="color:white; background-color:#8a704c">Submit</button>
+
+              </form>
+            
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" style="background-color: #141C52; color: white;">
+            Manual Upload
+          </button>
+        </h2>
+        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+          <div class="accordion-body">
+            
+            <form method="post" action="{{url_for('addStudentProfile')}}">
+                
+                <label class="form-label">Student first name:</label>
+                <input class="form-control" type="text" name="fname" required/>
+                
+                <label class="form-label">Student last name:</label>
+                <input class="form-control" type="text" name="lname" required/>
+                
+                <label class="form-label">Student email:</label>
+                <input class="form-control" type="email" name="email" required/>
+                <label for="classSelect2"><strong>Enrolled Course</strong></label>
+                <select class="form-select form-select-lg mb-3" name="classSelect2">
+                    {% for class in classes %}
+                    <option value="{{class['Course_ID']}}">{{class['CourseCode']}}</option>
+                    {% endfor %}
+                </select>
+                
+                <button type="submit" class="btn btn-primary" style="color:white; background-color:#141C52;">Submit</button>
+                <button type="reset" class="btn btn-primary" style="color:white; background-color:#8a704c;">Reset</button>
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Course add section -->
+
+  <h1 style="width: 100%;height: 10%;">Import Courses</h1>
+
+  <div style="margin: 3%;border-style: solid;border-color: #8a704c;">
+    <div style="color: white; background-color:#141C52; padding: 1%;">
+      <h6>Course Information</h6>
+    </div>
+    
+    <form method="post" action="{{url_for('addCourse')}}" style="margin: 3%;">
+                
+      <label class="form-label">Course Code:</label>
+      <input class="form-control" type="text" name="ccode" required/>
+      
+      <label class="form-label">Course Name:</label>
+      <input class="form-control" type="text" name="cname" required/>
+
+      <label class="form-label">Semester:</label>
+      <input class="form-control" type="text" name="semester" required/>
+
+      <label class="form-label">Year:</label>
+      <input class="form-control" type="text" name="year" required/>
+
+      <label class="form-label">Time:</label>
+      <input class="form-control" type="text" name="time" required/>
+      <br>
+      <button type="submit" class="btn btn-primary" style="color:white; background-color:#141C52;">Submit</button>
+      <button type="reset" class="btn btn-primary" style="color:white; background-color:#8a704c;">Reset</button>
+
+  </form>
+  </div>
+
+</div>
+
+
+
+{% endblock content%}

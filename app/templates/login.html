@@ -1,0 +1,51 @@
+{% extends 'layouts/testbase.html' %}
+{% block content %}
+<div class="container-fluid p-0" style="flex: 1 0 auto;">
+    <div class="row m-0" style="height: 100%;">
+        <div class="col-md-7 p-0 d-none d-md-block" style="background-image: url('https://picsum.photos/1000/1200?random=1'); background-size: cover; background-position: center; height: 100%;">
+        <div style="background-color: rgba(10, 22, 80, 0.75); height: 100%; width: 100%; display: flex; flex-direction: column; justify-content: center; padding: 40px;">
+            <div style="max-width: 500px; margin-left: auto; margin-right: auto;">
+            <h1 style="color: #ffffff; font-weight: 600; margin-bottom: 20px; font-size: 2.5rem;">Welcome to Singapore Management University</h1>
+            <p style="color: #ffffff; font-size: 1.1rem; line-height: 1.6;">
+                Singapore Management University (SMU) is internationally recognized for its world-class research and distinguished teaching. We are known for our interactive and technologically enabled pedagogy of seminar-style teaching in small-sized classes.
+            </p>
+            </div>
+        </div>
+        </div>
+        <div class="col-md-5 p-0" style="height: 100%; background-color: #ffffff; display: flex; flex-direction: column; justify-content: center; padding: 40px;">
+        <div style="max-width: 400px; width: 100%; margin-left: auto; margin-right: auto;">
+            <div style="text-align: center; margin-bottom: 40px;">
+            <h2 style="color: #0a1650; margin-top: 20px; font-weight: 600;">Sign In</h2>
+            <p style="color: #666666;">Access your SMU services and resources</p>
+            </div>
+            <form method="post" action="{{url_for('userLogin')}}">
+            <div class="mb-3">
+                <label for="email" class="form-label" style="color: #0a1650; font-weight: 500;">Email Address</label>
+                <input type="email" class="form-control" name="email" placeholder="Enter your email address" style="border-color: #cccccc; padding: 12px; border-radius: 4px;">
+            </div>
+            <div class="mb-4">
+                <label for="password" class="form-label" style="color: #0a1650; font-weight: 500;">Password</label>
+                <input type="password" class="form-control" name="password" placeholder="Enter your password" style="border-color: #cccccc; padding: 12px; border-radius: 4px;">
+            </div>
+            <div class="mb-4">
+                <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="rememberMe" style="color: #0a1650;">
+                <label class="form-check-label" for="rememberMe">Remember me</label>
+                </div>
+            </div>
+            <button type="submit" class="btn" style="background-color: #a18347; border-color: #a18347; padding: 12px; width: 100%; font-weight: 500; margin-bottom: 20px;">Sign In</button>
+            <div style="text-align: center;">
+                <a href="#forgotpassword" style="color: #0a1650; text-decoration: none; font-weight: 500;">Forgot Password?</a>
+            </div>
+            <hr style="margin: 30px 0;">
+            <div style="text-align: center;">
+                <p style="color: #666666; margin-bottom: 20px;">Need help? Contact</p>
+                <a href="#contact" style="color: #a18347; text-decoration: none; font-weight: 500;">IT Help Desk</a>
+            </div>
+            </form>
+        </div>
+        </div>
+    </div>
+    </div>
+{% endblock content %}
+

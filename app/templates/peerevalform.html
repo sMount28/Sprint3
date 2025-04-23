@@ -1,0 +1,101 @@
+{% extends 'layouts/testbase.html' %}
+{% block content %}
+<style>
+    .form-check-inline {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .form-check-label {
+        margin-right: 10px; /* Adds space between radio buttons */
+    }
+</style>
+
+<div class="container">
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container position-relative">
+            <div class="row d-flex justify-content-center">
+                <div class="col-md-8 col-lg-6 col-xl-5 col-xxl-4">
+                    <div class="card mb-5">
+                        <div class="card-body p-sm-5">
+                            <h2 class="text-center mb-4">Peer Evaluation Form</h2>
+                            <p>Please complete this form to evaluate your peer's performance in the group project. Your honest feedback will help improve future teamwork.</p>
+                            <form method="POST" action="{{url_for('submitEval', eid=eid)}}">
+                                <div class="mb-3"></div>
+                                <div class="mb-3"><select name="evaluated" class="form-select">
+                                        <optgroup label="Select Student Name">
+                                            {% for peep in peeps %}
+                                            <option value="{{peep['Student_ID']}}" >{{peep["FirstName"]}} {{peep["LastName"]}}</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                    </select></div>
+            
+                                <div class="mb-3">
+                                    <h1 style="font-size: 22.88px;">Performance Evaluation</h1>
+                                    <p>Rate your peer on a scale of 1 to 4 for each of the following criteria (1 = poor, 4 = excellent)</p>
+                                    <div class="form-check form-check-inline">
+                                        <small>Intellectual & Creative Skill</small>
+                                        <div class="radio-container">
+                                            <small class="form-check-label"><input type="radio" name="intelCreative" value="1">1</small>
+                                            <small class="form-check-label"><input type="radio" name="intelCreative" value="2">2</small>
+                                            <small class="form-check-label"><input type="radio" name="intelCreative" value="3">3</small>
+                                            <small class="form-check-label"><input type="radio" name="intelCreative" value="4">4</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <small>Interpersonal Skills</small>
+                                        <div class="radio-container">
+                                            <small class="form-check-label"><input type="radio" name="interpersonal" value="1">1</small>
+                                            <small class="form-check-label"><input type="radio" name="interpersonal" value="2">2</small>
+                                            <small class="form-check-label"><input type="radio" name="interpersonal" value="3">3</small>
+                                            <small class="form-check-label"><input type="radio" name="interpersonal" value="4">4</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <small>Disciplinary & Multi-Disciplinary Knowledge</small>
+                                        <div class="radio-container">
+                                            <small class="form-check-label"><input type="radio" name="disciplinary" value="1">1</small>
+                                            <small class="form-check-label"><input type="radio" name="disciplinary" value="2">2</small>
+                                            <small class="form-check-label"><input type="radio" name="disciplinary" value="3">3</small>
+                                            <small class="form-check-label"><input type="radio" name="disciplinary" value="4">4</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <small>Global Citizenship</small>
+                                        <div class="radio-container">
+                                            <small class="form-check-label"><input type="radio" name="citizenship" value="1">1</small>
+                                            <small class="form-check-label"><input type="radio" name="citizenship" value="2">2</small>
+                                            <small class="form-check-label"><input type="radio" name="citizenship" value="3">3</small>
+                                            <small class="form-check-label"><input type="radio" name="citizenship" value="4">4</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <small>Personal Mastery</small>
+                                        <div class="radio-container">
+                                            <small class="form-check-label"><input type="radio" name="mastery" value="1">1</small>
+                                            <small class="form-check-label"><input type="radio" name="mastery" value="2">2</small>
+                                            <small class="form-check-label"><input type="radio" name="mastery" value="3">3</small>
+                                            <small class="form-check-label"><input type="radio" name="mastery" value="4">4</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <small>Comments</small>
+                                    <textarea name="comments" class="form-control" placeholder="Please provide detailed feedback on your peer's performance"></textarea>
+                                    <small>Your comments should be specific, constructive, and professional.</small>
+                                </div>
+                                <div class="mb-3">
+                                    <button class="btn btn-primary d-block w-100" type="" style="color: rgb(0,0,0);background: rgb(255,255,255);">Save as Draft</button>
+                                </div>
+                                <div><button class="btn btn-primary d-block w-100" type="submit">Submit</button></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock content %}

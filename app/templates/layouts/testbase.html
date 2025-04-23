@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Singapore Management University</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google tag (gtag.js) --> 
+   <script async src="https://www.googletagmanager.com/gtag/js?id=G-2QVMRCMRKD"></script> 
+   <script> 
+    window.dataLayer = window.dataLayer || []; 
+    function gtag(){dataLayer.push(arguments);} 
+    gtag('js', new Date()); 
+    gtag('config', 'G-2QVMRCMRKD'); 
+  </script>
+</head>
+<body>
+  <div style="min-height: 100vh; display: flex; flex-direction: column;">
+    <nav class="navbar navbar-expand-lg" style="background-color: #0a1650;">
+      <div class="container">
+        <a class="navbar-brand" href="{{url_for('index')}}">
+          <img src="/static/logo.png" alt="Singapore Management University Logo" height="60" class="d-inline-block align-top" style="filter: none;">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="#home" style="color: #ffffff;">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="#about" style="color: #ffffff;">About</a></li>
+            <li class="nav-item"><a class="nav-link" href="#academics" style="color: #ffffff;">Academics</a></li>
+            <li class="nav-item"><a class="nav-link" href="#research" style="color: #ffffff;">Research</a></li>
+            <li class="nav-item"><a class="nav-link" href="#admissions" style="color: #ffffff;">Admissions</a></li>
+            <li class="nav-item"><a class="nav-link" href="#contact" style="color: #ffffff;">Contact</a></li>
+            {% if session['isLoggedIn'] == true %}
+            <a href="{{url_for('logout')}}" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Sign Out</a>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    {% block content %} {% endblock content %}
+
+    <footer style="background-color: #0a1650; color: #ffffff; padding: 15px 0; text-align: center;">
+      <div class="container">
+        <p style="margin: 0; font-size: 14px;">© 2025 Singapore Management University. All Rights Reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

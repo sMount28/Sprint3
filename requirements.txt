@@ -1,0 +1,10 @@
+Flask==2.3.3
+gunicorn
+# sqlalchemy==2.0.21
+# flask_sqlalchemy==3.1.1
+pymysql
+flask_migrate
+Jinja2==3.1.2
+cffi
+cryptography
+pandas

@@ -1,0 +1,44 @@
+{% extends 'layouts/testbase.html' %}
+{% block content %}
+    <div class="container py-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="text-primary fw-bold">Schedule Peer Evaluations</h1>
+            </div>
+            <div class="col-md-12">
+                <form class="mb-3" method="POST">
+                    <p>Group Selection</p>
+                    <label for="classSelect2"><strong>Please Select a Course</strong></label>
+                        <select class="form-select form-select-lg mb-3" name="classSelect2">
+                            {% for class in classes %}
+                            <option value="{{class['Course_ID']}}">{{class['CourseCode']}}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary" style="color:white; background-color:#8a704c">Select</button>
+                </form>
+            </div>
+
+            {% if course_id != none %}
+            <div class="col-md-12">
+                <form method="POST" action="{{ url_for('scheduleEval') }}">
+                    <p>Please select groups to schedule peer evaluations.</p>
+                    <div class="mb-3">
+                        <ul class="list-group">
+                            {% for group in groups %}
+                            <li class="list-group-item"><input name="groups" type="checkbox" class="form-check-input me-1" value="{{group['Group_ID']}}">{{group['GroupName']}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="mb-3">
+                        <p>Select start date for peer evaluations.</p><input name="start_date" class="form-control" type="date">
+                    </div>
+                    <div class="mb-3">
+                        <p>Select end date for peer evaluations.</p><input name="due_date" class="form-control" type="date">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="color:white; background-color:#141C52;">Submit</button>
+                    <button type="reset" class="btn btn-primary" style="color:white; background-color:#8a704c;">Reset</button>                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}

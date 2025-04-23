@@ -1,0 +1,21 @@
+<div style="margin: 3%;border-style: solid;border-color: #8a704c;">
+    <form method="post" action="{{url_for('addStudentProfile')}}">
+        
+        <label class="form-label">Student first name:</label>
+        <input class="form-control" type="text" name="fname"/>
+        
+        <label class="form-label">Student last name:</label>
+        <input class="form-control" type="text" name="lname"/>
+        
+        <label class="form-label">Student email:</label>
+        <input class="form-control" type="email" name="email"/>
+
+        <select class="form-select form-select-lg mb-3">
+            {% for class in classes %}
+            <option value="{{class['Course_ID']}}">{{class['CourseCode']}}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit"></button>
+    </form>
+</div>
