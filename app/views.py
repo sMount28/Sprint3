@@ -9,13 +9,12 @@ from jinja2  import TemplateNotFound
 
 
 # App modules
-from app import app, db, cursor
+from app import app
 # from app.models import Profiles
 
 # Other inputs
 from datetime import datetime
-
-import csv, pandas, io
+import csv, pandas, io, pymysql
 
 # App main route + generic routing
 @app.route('/')
@@ -41,6 +40,7 @@ def login():
 def professorHome(pid):
     session['schedule_msg'] = 0
 
+    db, cursor = connectToDatabase()
 
     sql = "SELECT COUNT(DISTINCT Student.Student_ID) AS Count_Students_Enrolled, (SELECT COUNT(Course_ID) FROM Course WHERE Professor_ID = %s) AS Count_Courses_Taught FROM Student JOIN Student_Course ON Student.Student_ID = Student_Course.Student_ID JOIN Course ON Student_Course.Course_ID = Course.Course_ID WHERE Course.Professor_ID = %s;"
     cursor.execute(sql, [pid, pid])
@@ -57,12 +57,13 @@ def professorHome(pid):
 
     evaluations = cursor.fetchall()
 
+    stopDatabase(db, cursor)
+
     return render_template('profdashboard.html', activeCourses=result['Count_Courses_Taught'], totalStudents=result['Count_Students_Enrolled'], courses=courses, evaluations=evaluations)
 
 
 
-def checkProfessorRegister(email, pwd):
-
+def checkProfessorRegister(email, pwd, cursor):
     sql = "select * from Professor where Email=%s and Password=%s;"
     cursor.execute(sql, [email, pwd])
     result = cursor.fetchone()
@@ -76,6 +77,7 @@ def checkProfessorRegister(email, pwd):
 
 @app.route('/userLogin', methods=["POST"])
 def userLogin():
+    db, cursor = connectToDatabase()
 
     email = request.form.get("email")
     pwd = request.form.get("password")
@@ -86,7 +88,8 @@ def userLogin():
     result = cursor.fetchone()
 
     if result is None:
-        isProfessor = checkProfessorRegister(email, pwd)
+        isProfessor = checkProfessorRegister(email, pwd, cursor)
+        stopDatabase(db, cursor)
 
         if not isProfessor:
             session['msg'] = "Invalid Login Credentials"
@@ -96,25 +99,25 @@ def userLogin():
             return redirect(url_for('professorHome', pid=isProfessor))
 
     else:
+        stopDatabase(db, cursor)
         setUserInfo(result["Student_ID"], result["FirstName"], result["LastName"], result["Email"], isProf=False)
         
         return redirect(url_for("student_dashboard", sid=session["student_id"]))
 
 @app.route('/studentdashboard/<sid>')
 def student_dashboard(sid):
-
     if not session.get('student_id') or session["student_id"] == 'none':
         return redirect(url_for('login'))
     
     else:
+        db, cursor = connectToDatabase()
+
         sql = "SELECT c.CourseName, g.GroupName, pe.*, DATEDIFF(pe.Due_Date, CURDATE()) AS Days_Until_Due FROM Peer_Evaluation pe JOIN `Groups` g ON pe.Group_ID = g.Group_ID JOIN Course c ON g.Course_ID = c.Course_ID JOIN Student_Groups sg ON g.Group_ID = sg.Group_ID WHERE sg.Student_ID = %s;"
 
         cursor.execute(sql, [session["student_id"]])
 
         evalInfo = cursor.fetchall()    
         evalList = []
-
-        #                                                                                   LOOK AT THIS STUFF ??????????????????????////
 
         for eval in evalInfo:
             eid = eval["Evaluation_ID"]
@@ -126,6 +129,7 @@ def student_dashboard(sid):
             else:
                 evalList.append(eval)
 
+        stopDatabase(db, cursor)
 
         return render_template('studentdashboard.html', sid=sid, evalLinks=evalList)
 
@@ -135,9 +139,13 @@ def eval(eid, gid):
         return redirect(url_for('login'))
     
     else:
+        db, cursor = connectToDatabase()
+
         sql = "SELECT s.Student_ID, s.FirstName, s.LastName, sg.Group_ID FROM Student s JOIN Student_Groups sg ON s.Student_ID = sg.Student_ID WHERE sg.Group_ID = %s AND s.Student_ID <> %s;"
         cursor.execute(sql, [gid, session["student_id"]])
         peeps = cursor.fetchall()
+
+        stopDatabase(db, cursor)
 
         return render_template('peerevalform.html', peeps=peeps, eid=eid)
 
@@ -160,6 +168,8 @@ def submitEval(eid):
     GLOs = [intel_creativity, interpersonal, disciplinary, citizenship, mastery]
     i = 0
 
+    db, cursor = connectToDatabase()
+
     for score in GLOs:
         i += 1
         
@@ -172,13 +182,17 @@ def submitEval(eid):
             db.commit()
         except Exception as e:
             print(f"An error occurred: {e}")
-            db.rollback()        
+            db.rollback()     
+
+    stopDatabase(db, cursor)
 
     return redirect(url_for('student_dashboard', sid=session["student_id"]))
 
 
 @app.route('/student-course-mgr', methods=['POST', 'GET'])
 def student_course_mgr():
+    db, cursor = connectToDatabase()
+
     session['msg'] = 'none'
     data = []
     profClasses = "select Course_ID, CourseCode from Course where Professor_ID=%s;"
@@ -193,11 +207,14 @@ def student_course_mgr():
             next(csv_input, None)
             data = list(csv_input)
             session['tempdata'] = data
+    
+    stopDatabase(db, cursor)
 
     return render_template('manager1.html', data=data, classes=classes)
 
 @app.route('/post-batch-students', methods=['POST', 'GET'])
 def postBatchStudents():
+    db, cursor = connectToDatabase()
 
     # note that the session var data is going to come out as a list of lists(indexes = each cell data)
     course_id = request.form.get("classSelect")
@@ -218,34 +235,35 @@ def postBatchStudents():
         
 
             # SQL insert using this student info
-            insertNewStudent(fname, lname, email)
+            insertNewStudent(fname, lname, email, db, cursor)
         
-            student_id = fetchStudentID(email)
+            student_id = fetchStudentID(email, cursor)
         
         else:
             student_id = student_exists['Student_ID']
         
         # SQL to assign student to course using 'id variable'
 
-        addStudentToCourse(student_id, course_id)
+        addStudentToCourse(student_id, course_id, db, cursor)
+
+    stopDatabase(db, cursor)
 
     session['msg'] = "Student Batch Sucessfully Uploaded!"
 
     return redirect(url_for('professorHome', pid=session['student_id']))
 
 
-
-def insertNewStudent(fname, lname, email):              # use this for new student
+def insertNewStudent(fname, lname, email, db, cursor): 
     sql = "insert into Student(FirstName, LastName, Email, Password, Date_Added) values(%s, %s, %s, 'default', current_date());"
     cursor.execute(sql, [fname, lname, email])
     db.commit()
 
-def addStudentToCourse(student_id, course_id):
+def addStudentToCourse(student_id, course_id, db, cursor):
     sql = "insert into Student_Course(Student_ID, Course_ID) values(%s, %s);"
     cursor.execute(sql, [student_id, course_id])
     db.commit()
 
-def fetchStudentID(email):
+def fetchStudentID(email, cursor):
     student_id = "select Student_ID from Student where Email=%s;"
     cursor.execute(student_id, [email])
     student_id = cursor.fetchone()['Student_ID']
@@ -262,6 +280,8 @@ def addStudentProfile():
 
     student_id = None
 
+    db, cursor = connectToDatabase()
+
     sql = "select Student_ID from Student where Email=%s;"
     cursor.execute(sql, [email])
 
@@ -269,14 +289,15 @@ def addStudentProfile():
 
     if not student_exists:
         # SQL insert using this student info
-        insertNewStudent(fname, lname, email)
-        student_id = fetchStudentID(email)
+        insertNewStudent(fname, lname, email, db, cursor)
+        student_id = fetchStudentID(email, cursor)
     
     else:
         student_id = student_exists['Student_ID']
 
+    addStudentToCourse(student_id, course_id, db, cursor)
 
-    addStudentToCourse(student_id, course_id)
+    stopDatabase(db, cursor)
 
     session['msg'] = "Student Sucessfully Uploaded!"
 
@@ -291,9 +312,13 @@ def addCourse():
     year = request.form.get('year')
     time = request.form.get('time')
 
+    db, cursor = connectToDatabase()
+
     sql = 'Insert into Course(CourseCode, CourseName, Professor_ID, Semester, Year, Time) VALUES(%s, %s, %s, %s, %s, %s)'
     cursor.execute(sql, [ccode, cname, session['student_id'], semester, year, time])
     db.commit()
+
+    stopDatabase(db, cursor)
 
     session['msg'] = 'Course Sucessfully Added!'
 
@@ -302,6 +327,8 @@ def addCourse():
 
 @app.route('/student-group-mgr', methods=['POST', 'GET'])
 def student_group_mgr():
+    db, cursor = connectToDatabase()
+    
     students = None    
     profClasses = "select Course_ID, CourseCode from Course where Professor_ID=%s;"
     cursor.execute(profClasses, [session['student_id']])
@@ -314,16 +341,20 @@ def student_group_mgr():
         cursor.execute(sql, [course_id])
         students = cursor.fetchall()
         session['tempdata'] = course_id
+
+    stopDatabase(db, cursor)
     
     return render_template('manager2.html', classes=classes, course_id=course_id, students=students)
 
 @app.route('/createGroup', methods=['POST'])
-def createGroup():
+def createGroup():    
     course_id = session['tempdata']
     students = request.form.getlist('students')
     groupName = request.form.get('groupName')
 
     if len(students) > 0:
+        db, cursor = connectToDatabase()
+
         sql = 'INSERT INTO `Groups`(Course_ID, GroupName) VALUES(%s, %s)'
         cursor.execute(sql, [course_id, groupName])
         db.commit()
@@ -336,6 +367,8 @@ def createGroup():
             sql = 'INSERT INTO Student_Groups(Student_ID, Group_ID) VALUES(%s, %s)'
             cursor.execute(sql, [student, groupID])
             db.commit()
+        
+        stopDatabase(db, cursor)
     else:
         return redirect(url_for('student_group_mgr'))
     
@@ -348,6 +381,7 @@ def createGroup():
 # Schedule Peer Evaluations
 @app.route('/peer-evaluation-mgr', methods=['POST', 'GET'])
 def evaluationScheduler():
+    db, cursor = connectToDatabase()
 
     groups = None    
     profClasses = "select Course_ID, CourseCode from Course where Professor_ID=%s;"
@@ -361,6 +395,8 @@ def evaluationScheduler():
         cursor.execute(sql, [course_id])
         groups = cursor.fetchall()
         session['tempdata'] = course_id
+
+    stopDatabase(db, cursor)
     
     return render_template('scheduleevaluations.html', groups=groups, classes=classes, course_id=course_id)
 
@@ -385,15 +421,23 @@ def scheduleEval():
     elif start_date >= due_date:
         session['schedule_msg'] = 4
         return redirect(url_for('evaluationScheduler'))
+    
+    db, cursor = connectToDatabase()
 
     for group in groups:
         sql = 'INSERT INTO Peer_Evaluation(Group_ID, Start_Date, Due_Date) VALUES(%s, %s, %s)'
         cursor.execute(sql, [group, start_date, due_date])
         db.commit()
 
+    stopDatabase(db, cursor)
+
     session['schedule_msg'] = 0
     session['msg'] = 'Peer evaluation successfully scheduled!'
     return redirect(url_for('professorHome', pid=session['student_id']))
+
+
+#########################################################################
+# Other local methods
 
 @app.route('/loggingout')
 def logout():
@@ -414,6 +458,20 @@ def setUserInfo(id, fname, lname, email, isProf):
     session['isLoggedIn'] = True
     session['isProfessor'] = isProf
 
-def stopDatabase():
+def connectToDatabase():
+    db = pymysql.connect(
+        host='35.245.249.29',
+        port=3306,
+        user='admin',
+        password='SMUGroup3',
+        charset="utf8mb4",
+        database='PeerEvaluationDB',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+    cursor = db.cursor()
+
+    return db, cursor
+
+def stopDatabase(db, cursor):
     cursor.close()
     db.close()

@@ -39,11 +39,11 @@
               <li class="list-group-item py-2"><strong>Total Students: {{totalStudents}}</strong></li>
               <li class="list-group-item py-2"><strong>Last Updated: Oct 15, 2025</strong></li>
             </ul>
-          <a class="btn w-100 mt-3" style="background-color: #C49B34; border-color: #C49B34;" href="{{url_for('student_course_mgr')}}">Manage Students & Courses</a>
+            <a class="btn w-100 mt-3" style="background-color: #C49B34; border-color: #C49B34;" href="{{url_for('student_course_mgr')}}">Manage Students & Courses</a>
           </div>
         </div>
       </div>
-
+    
       <!-- Student Groups -->
       <div class="col-md-4 mb-4">
         <div class="card h-100 border">
@@ -51,18 +51,17 @@
           <div class="card-body">
             <p class="card-text">Create and manage student project groups within your courses.</p>
             <ul class="list-group list-group-flush">
-
-            {% for course in courses %}
+              {% for course in courses %}
               <li class="list-group-item d-flex justify-content-between align-items-center py-2">
                 {{course['CourseCode']}} {{course['CourseName']}} <span class="badge bg-success">{{course['GroupCount']}} Groups</span>
               </li>
-            {% endfor %}
+              {% endfor %}
             </ul>
             <a class="btn w-100 mt-3" style="background-color: #C49B34; border-color: #C49B34;" href="{{url_for('student_group_mgr')}}">Manage Student Groups</a>
           </div>
         </div>
       </div>
-
+    
       <!-- Peer Evaluations -->
       <div class="col-md-4 mb-4">
         <div class="card h-100 border">
@@ -87,5 +86,21 @@
         </div>
       </div>
     </div>
+    
+    <!-- Now add the Klipfolio Charts below the cards -->
+    <div class="row justify-content-center mt-5">
+      <div class="col-12 text-center">
+        <h3 class="mb-4">Dashboard Analytics</h3>
+        <iframe 
+          src="https://app.klipfolio.com/published/2b558b9178a2ecfdd49175ac56c36606/professor-dashboard"
+          width="100%" 
+          height="800" 
+          frameborder="0" 
+          style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+        </iframe>
+      </div>
+    </div>
+    
   </div>
+
 {% endblock content %}
