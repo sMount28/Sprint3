@@ -15,8 +15,6 @@ app.config['UPLOAD_FOLDER'] = 'uploads'  # Create a folder named 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 app.secret_key = "jhfskjlwelkj"
 
-
-
 # Import routing to render the pages
 from app import views
 

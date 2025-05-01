@@ -16,6 +16,9 @@ from app import app
 from datetime import datetime
 import csv, pandas, io, pymysql
 
+#########################################################################
+# Index and Log In Methods
+
 # App main route + generic routing
 @app.route('/')
 def index():
@@ -26,55 +29,15 @@ def index():
     if session["student_id"] == 'none':
         session['msg'] = 'none'
         return redirect(url_for('login'))
-
     else:
         return redirect(url_for('student_dashboard', sid=session["student_id"])) if session['isProfessor'] == False else redirect(url_for('professorHome', pid=session["student_id"]))
 
-    return render_template('peerevalform.html')
-
+# Login route
 @app.route('/login')
 def login():
     return render_template('login.html')
 
-@app.route('/professorDashboard/<pid>')
-def professorHome(pid):
-    session['schedule_msg'] = 0
-
-    db, cursor = connectToDatabase()
-
-    sql = "SELECT COUNT(DISTINCT Student.Student_ID) AS Count_Students_Enrolled, (SELECT COUNT(Course_ID) FROM Course WHERE Professor_ID = %s) AS Count_Courses_Taught FROM Student JOIN Student_Course ON Student.Student_ID = Student_Course.Student_ID JOIN Course ON Student_Course.Course_ID = Course.Course_ID WHERE Course.Professor_ID = %s;"
-    cursor.execute(sql, [pid, pid])
-
-    result = cursor.fetchone()
-
-    sql = "SELECT Course.Course_ID, Course.CourseCode, Course.CourseName, COUNT(`Groups`.Group_ID) AS 'GroupCount' FROM Course LEFT JOIN `Groups` ON `Groups`.Course_ID = Course.Course_ID WHERE Course.Professor_ID = %s GROUP BY Course.Course_ID, Course.CourseCode, Course.CourseName;"
-    cursor.execute(sql, [pid])
-
-    courses=cursor.fetchall()
-
-    sql = 'SELECT c.Course_ID, c.CourseCode, c.CourseName, CASE WHEN EXISTS (SELECT 1 FROM `Groups` g JOIN Peer_Evaluation pe ON pe.Group_ID = g.Group_ID WHERE g.Course_ID = c.Course_ID AND CURRENT_DATE BETWEEN pe.Start_Date AND pe.Due_Date) THEN 1 ELSE 0 END AS HasActiveEvaluation FROM Course c WHERE c.Professor_ID = %s;'
-    cursor.execute(sql, [pid])
-
-    evaluations = cursor.fetchall()
-
-    stopDatabase(db, cursor)
-
-    return render_template('profdashboard.html', activeCourses=result['Count_Courses_Taught'], totalStudents=result['Count_Students_Enrolled'], courses=courses, evaluations=evaluations)
-
-
-
-def checkProfessorRegister(email, pwd, cursor):
-    sql = "select * from Professor where Email=%s and Password=%s;"
-    cursor.execute(sql, [email, pwd])
-    result = cursor.fetchone()
-
-    if result is None:
-        return False
-    
-    else:
-        setUserInfo(result['Professor_ID'], result['FirstName'], result['LastName'], email, isProf=True)
-        return result['Professor_ID']
-
+# Login method, checks if account is student or professor and sends to respective dashboard
 @app.route('/userLogin', methods=["POST"])
 def userLogin():
     db, cursor = connectToDatabase()
@@ -104,8 +67,29 @@ def userLogin():
         
         return redirect(url_for("student_dashboard", sid=session["student_id"]))
 
+# Helper method to check if account is a professor in the database
+def checkProfessorRegister(email, pwd, cursor):
+    sql = "select * from Professor where Email=%s and Password=%s;"
+    cursor.execute(sql, [email, pwd])
+    result = cursor.fetchone()
+
+    if result is None:
+        return False
+    
+    else:
+        setUserInfo(result['Professor_ID'], result['FirstName'], result['LastName'], email, isProf=True)
+        return result['Professor_ID']
+
+
+#########################################################################
+# Student Dashboard Functions
+
+# Student dashboard route
 @app.route('/studentdashboard/<sid>')
 def student_dashboard(sid):
+    session['eval_msg'] = 0
+    session['group_id'] = 0
+    
     if not session.get('student_id') or session["student_id"] == 'none':
         return redirect(url_for('login'))
     
@@ -133,8 +117,11 @@ def student_dashboard(sid):
 
         return render_template('studentdashboard.html', sid=sid, evalLinks=evalList)
 
+# Peer evaluation route 
 @app.route('/eval/<eid>/<gid>')
 def eval(eid, gid):
+    session['group_id'] = gid
+
     if not session.get('student_id') or session["student_id"] == 'none':
         return redirect(url_for('login'))
     
@@ -155,16 +142,35 @@ def submitEval(eid):
     evaluated = int(request.form.get('evaluated'))
     evaluator = session["student_id"]
     date = datetime.now()
-    intel_creativity = int(request.form.get('intelCreative'))
-    interpersonal = int(request.form.get('interpersonal'))
-    disciplinary = int(request.form.get('disciplinary'))
-    citizenship = int(request.form.get('citizenship'))
-    mastery = int(request.form.get('mastery'))
-    comments = request.form.get('comments')
+    intel_creativity = request.form.get('intelCreative')
+    interpersonal = request.form.get('interpersonal')
+    disciplinary = request.form.get('disciplinary')
+    citizenship = request.form.get('citizenship')
+    mastery = request.form.get('mastery')
+
+    # Error handling    
+    if not intel_creativity:
+        session['eval_msg'] = 1
+        return redirect(url_for('eval', eid=session['student_id'], gid=session['group_id']))
+    
+    if not interpersonal:
+        session['eval_msg'] = 1
+        return redirect(url_for('eval', eid=session['student_id'], gid=session['group_id']))
+    
+    if not disciplinary:
+        session['eval_msg'] = 1
+        return redirect(url_for('eval', eid=session['student_id'], gid=session['group_id']))
+    
+    if not citizenship:
+        session['eval_msg'] = 1
+        return redirect(url_for('eval', eid=session['student_id'], gid=session['group_id']))
+    
+    if not mastery:
+        session['eval_msg'] = 1
+        return redirect(url_for('eval', eid=session['student_id'], gid=session['group_id']))
 
     # database connection setup
     # insert data into Evaluation_Result
-    
     GLOs = [intel_creativity, interpersonal, disciplinary, citizenship, mastery]
     i = 0
 
@@ -178,13 +184,15 @@ def submitEval(eid):
             VALUES (%s, %s, %s, %s, %s, %s, %s);
         '''
         try:
-            cursor.execute(sql, [eid, evaluator, evaluated, i, score, date, 1])
+            cursor.execute(sql, [eid, evaluator, evaluated, i, int(score), date, 1])
             db.commit()
         except Exception as e:
             print(f"An error occurred: {e}")
             db.rollback()     
 
     stopDatabase(db, cursor)
+
+    session['msg'] = "Peer Evaluation Completed!"
 
     return redirect(url_for('student_dashboard', sid=session["student_id"]))
 
@@ -271,6 +279,32 @@ def fetchStudentID(email, cursor):
     return student_id
 
 
+# Professor dashboard route
+@app.route('/professorDashboard/<pid>')
+def professorHome(pid):
+    session['schedule_msg'] = 0
+
+    db, cursor = connectToDatabase()
+
+    sql = "SELECT COUNT(DISTINCT Student.Student_ID) AS Count_Students_Enrolled, (SELECT COUNT(Course_ID) FROM Course WHERE Professor_ID = %s) AS Count_Courses_Taught FROM Student JOIN Student_Course ON Student.Student_ID = Student_Course.Student_ID JOIN Course ON Student_Course.Course_ID = Course.Course_ID WHERE Course.Professor_ID = %s;"
+    cursor.execute(sql, [pid, pid])
+
+    result = cursor.fetchone()
+
+    sql = "SELECT Course.Course_ID, Course.CourseCode, Course.CourseName, COUNT(`Groups`.Group_ID) AS 'GroupCount' FROM Course LEFT JOIN `Groups` ON `Groups`.Course_ID = Course.Course_ID WHERE Course.Professor_ID = %s GROUP BY Course.Course_ID, Course.CourseCode, Course.CourseName;"
+    cursor.execute(sql, [pid])
+
+    courses=cursor.fetchall()
+
+    sql = 'SELECT c.Course_ID, c.CourseCode, c.CourseName, CASE WHEN EXISTS (SELECT 1 FROM `Groups` g JOIN Peer_Evaluation pe ON pe.Group_ID = g.Group_ID WHERE g.Course_ID = c.Course_ID AND CURRENT_DATE BETWEEN pe.Start_Date AND pe.Due_Date) THEN 1 ELSE 0 END AS HasActiveEvaluation FROM Course c WHERE c.Professor_ID = %s;'
+    cursor.execute(sql, [pid])
+
+    evaluations = cursor.fetchall()
+
+    stopDatabase(db, cursor)
+
+    return render_template('profdashboard.html', activeCourses=result['Count_Courses_Taught'], totalStudents=result['Count_Students_Enrolled'], courses=courses, evaluations=evaluations)
+
 @app.route('/addStudentProfile', methods=['POST', 'GET'])
 def addStudentProfile():
     fname = request.form.get('fname')
@@ -323,7 +357,7 @@ def addCourse():
     session['msg'] = 'Course Sucessfully Added!'
 
 
-    return redirect(url_for('student_course_mgr'))
+    return redirect(url_for('professorHome', pid=session['student_id']))
 
 @app.route('/student-group-mgr', methods=['POST', 'GET'])
 def student_group_mgr():

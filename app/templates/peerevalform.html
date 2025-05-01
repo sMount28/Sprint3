@@ -1,101 +1,82 @@
 {% extends 'layouts/testbase.html' %}
 {% block content %}
-<style>
-    .form-check-inline {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-    }
+<div class="container py-4">
+    <div class="row mt-3">
+        <div class="col">
+          {% if session['eval_msg'] == 1 %}
+          <div class="alert alert-info border-start border-4" style="border-left-color: rgb(161, 27, 6); background-color: #ecb6b6;">
+            <strong>Error</strong>
+            <p class="mb-0" style="color:rgb(0, 51, 102)">Please select a score for all criteria.</p>
+          </div>
+          {% endif %}
+        </div>
+    </div>
     
-    .form-check-label {
-        margin-right: 10px; /* Adds space between radio buttons */
-    }
-</style>
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="text-primary fw-bold">Peer Evaluation Form</h1>
+            <p>Please complete this form to evaluate your peer's performance in the group project. Your honest feedback will help improve future teamwork.</p>
+        </div>
+    </div>
 
-<div class="container">
-    <section class="position-relative py-4 py-xl-5">
-        <div class="container position-relative">
-            <div class="row d-flex justify-content-center">
-                <div class="col-md-8 col-lg-6 col-xl-5 col-xxl-4">
-                    <div class="card mb-5">
-                        <div class="card-body p-sm-5">
-                            <h2 class="text-center mb-4">Peer Evaluation Form</h2>
-                            <p>Please complete this form to evaluate your peer's performance in the group project. Your honest feedback will help improve future teamwork.</p>
-                            <form method="POST" action="{{url_for('submitEval', eid=eid)}}">
-                                <div class="mb-3"></div>
-                                <div class="mb-3"><select name="evaluated" class="form-select">
-                                        <optgroup label="Select Student Name">
-                                            {% for peep in peeps %}
-                                            <option value="{{peep['Student_ID']}}" >{{peep["FirstName"]}} {{peep["LastName"]}}</option>
-                                            {% endfor %}
-                                        </optgroup>
-                                    </select></div>
-            
-                                <div class="mb-3">
-                                    <h1 style="font-size: 22.88px;">Performance Evaluation</h1>
-                                    <p>Rate your peer on a scale of 1 to 4 for each of the following criteria (1 = poor, 4 = excellent)</p>
-                                    <div class="form-check form-check-inline">
-                                        <small>Intellectual & Creative Skill</small>
-                                        <div class="radio-container">
-                                            <small class="form-check-label"><input type="radio" name="intelCreative" value="1">1</small>
-                                            <small class="form-check-label"><input type="radio" name="intelCreative" value="2">2</small>
-                                            <small class="form-check-label"><input type="radio" name="intelCreative" value="3">3</small>
-                                            <small class="form-check-label"><input type="radio" name="intelCreative" value="4">4</small>
-                                        </div>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <small>Interpersonal Skills</small>
-                                        <div class="radio-container">
-                                            <small class="form-check-label"><input type="radio" name="interpersonal" value="1">1</small>
-                                            <small class="form-check-label"><input type="radio" name="interpersonal" value="2">2</small>
-                                            <small class="form-check-label"><input type="radio" name="interpersonal" value="3">3</small>
-                                            <small class="form-check-label"><input type="radio" name="interpersonal" value="4">4</small>
-                                        </div>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <small>Disciplinary & Multi-Disciplinary Knowledge</small>
-                                        <div class="radio-container">
-                                            <small class="form-check-label"><input type="radio" name="disciplinary" value="1">1</small>
-                                            <small class="form-check-label"><input type="radio" name="disciplinary" value="2">2</small>
-                                            <small class="form-check-label"><input type="radio" name="disciplinary" value="3">3</small>
-                                            <small class="form-check-label"><input type="radio" name="disciplinary" value="4">4</small>
-                                        </div>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <small>Global Citizenship</small>
-                                        <div class="radio-container">
-                                            <small class="form-check-label"><input type="radio" name="citizenship" value="1">1</small>
-                                            <small class="form-check-label"><input type="radio" name="citizenship" value="2">2</small>
-                                            <small class="form-check-label"><input type="radio" name="citizenship" value="3">3</small>
-                                            <small class="form-check-label"><input type="radio" name="citizenship" value="4">4</small>
-                                        </div>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <small>Personal Mastery</small>
-                                        <div class="radio-container">
-                                            <small class="form-check-label"><input type="radio" name="mastery" value="1">1</small>
-                                            <small class="form-check-label"><input type="radio" name="mastery" value="2">2</small>
-                                            <small class="form-check-label"><input type="radio" name="mastery" value="3">3</small>
-                                            <small class="form-check-label"><input type="radio" name="mastery" value="4">4</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <small>Comments</small>
-                                    <textarea name="comments" class="form-control" placeholder="Please provide detailed feedback on your peer's performance"></textarea>
-                                    <small>Your comments should be specific, constructive, and professional.</small>
-                                </div>
-                                <div class="mb-3">
-                                    <button class="btn btn-primary d-block w-100" type="" style="color: rgb(0,0,0);background: rgb(255,255,255);">Save as Draft</button>
-                                </div>
-                                <div><button class="btn btn-primary d-block w-100" type="submit">Submit</button></div>
-                            </form>
+    <form method="POST" action="{{ url_for('submitEval', eid=eid) }}">
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <label for="studentSelect"><strong>Select Student</strong></label>
+                <select name="evaluated" class="form-select form-select-lg" id="studentSelect">
+                    {% for peep in peeps %}
+                    <option value="{{peep['Student_ID']}}">{{peep["FirstName"]}} {{peep["LastName"]}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <h5><strong>Performance Evaluation</strong></h5>
+                <p>Rate your peer on a scale of 1 to 4 for each of the following criteria (1 = poor, 4 = excellent)</p>
+
+                {% set criteria = [
+                    ('intelCreative', 'Intellectual & Creative Skill'),
+                    ('interpersonal', 'Interpersonal Skills'),
+                    ('disciplinary', 'Disciplinary & Multi-Disciplinary Knowledge'),
+                    ('citizenship', 'Global Citizenship'),
+                    ('mastery', 'Personal Mastery')
+                ] %}
+                
+                {% for key, label in criteria %}
+                <div class="mb-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">{{ label }}</label>
+                        </div>
+                        <div class="col-md-8 d-flex">
+                            {% for i in range(1, 5) %}
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="radio" name="{{key}}" value="{{i}}" id="{{key}}{{i}}">
+                                <label class="form-check-label" for="{{key}}{{i}}">{{i}}</label>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
         </div>
-    </section>
+
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <label for="comments"><strong>Comments</strong></label>
+                <textarea name="comments" id="comments" class="form-control" placeholder="Please provide detailed feedback on your peer's performance"></textarea>
+                <small class="text-muted">Your comments should be specific, constructive, and professional.</small>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-primary" style="background-color:#141C52; color: white;">Submit</button>
+            </div>
+        </div>
+    </form>
 </div>
 {% endblock content %}

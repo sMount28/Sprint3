@@ -11,10 +11,17 @@
 
     <div class="row mb-4">
       <div class="col">
+        {% if session['msg'] == 'none' %}
         <div class="alert alert-info border-start border-4 border-primary">
           <h4 class="alert-heading text-primary">Important Announcement</h4>
           <p>Peer evaluations for this semester are now available. Please complete them by November 30, 2023.</p>
         </div>
+        {% else %}
+        <div class="alert alert-info border-start border-4" style="border-left-color: rgb(7, 150, 16); background-color: #b6ecbb;">
+          <strong>Success</strong>
+          <p class="mb-0" style="color:rgb(0, 51, 102)">{{session['msg']}}</p>
+        </div>
+        {% endif %}
       </div>
     </div>
 
