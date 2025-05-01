@@ -67,6 +67,11 @@ def userLogin():
         
         return redirect(url_for("student_dashboard", sid=session["student_id"]))
 
+# About page
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 # Helper method to check if account is a professor in the database
 def checkProfessorRegister(email, pwd, cursor):
     sql = "select * from Professor where Email=%s and Password=%s;"
