@@ -3,51 +3,44 @@
 <div class="container py-4">
     <div class="row mb-4">
         <div class="col">
-            <h1 class="text-primary fw-bold">Group Mangement</h1>
+            <h1 class="text-primary fw-bold">Group Management</h1>
             <p>Create and manage student groups for peer evaluations. Filter students by courses and view existing groups.</p>
         </div>
     </div>
 </div>
+
 <div class="container">
-    <div>
-        <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item" role="presentation"><a class="nav-link active" role="tab" data-bs-toggle="tab" href="#tab-1">Create Groups</a></li>
-            <li class="nav-item" role="presentation"><a class="nav-link" role="tab" data-bs-toggle="tab" href="#tab-2">View Existing Groups</a></li>
-        </ul>
-        <div class="tab-content">
-            <div class="tab-pane active" role="tabpanel" id="tab-1" style="padding: 1%;">
-                <form class="mb-3" method="POST">
-                    <div>
-                        <p>Student Selection.</p>
-                        <label for="classSelect2"><strong>Please Select a Course</strong></label>
-                        <select class="form-select form-select-lg mb-3" name="classSelect2">
-                            {% for class in classes %}
-                            <option value="{{class['Course_ID']}}">{{class['CourseCode']}}</option>
-                            {% endfor %}
-                        </select>
-                        <button type="submit" class="btn btn-primary" style="color:white; background-color:#8a704c">Select</button>
-                </form>
-                {% if course_id != none %}
-                <form method="POST" action="{{ url_for('createGroup') }}">
-                    <div class="mb-3">
-                        <ul class="list-group">
-                            {% for student in students %}
-                            <li class="list-group-item"><input name="students" type="checkbox" class="form-check-input me-1" value="{{student['Student_ID']}}">{{student['FirstName']}} {{student['LastName']}}  -  {{student['Email']}}</li>
-                            {% endfor %}
-                        </ul>
-                        <div class="mb-3">
-                            <p>Group Name</p><input name="groupName" class="form-control" type="text" placeholder="Group Name..." required>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary" style="color:white; background-color:#141C52;">Submit</button>
-                        <button type="reset" class="btn btn-primary" style="color:white; background-color:#8a704c;">Reset</button>
-                    </div>
-                </form>
-                {% endif %}
-
-            </div>
+    <form class="mb-3" method="POST">
+        <div>
+            <label for="classSelect2"><strong>Please Select a Course</strong></label>
+            <select class="form-select form-select-lg mb-3" name="classSelect2">
+                {% for class in classes %}
+                <option value="{{class['Course_ID']}}">{{class['CourseCode']}}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary" style="color:white; background-color:#8a704c">Select</button>
         </div>
-    </div>
-</div>
+    </form>
 
+    {% if course_id != none %}
+    <form method="POST" action="{{ url_for('createGroup') }}">
+        <div class="mb-3">
+            <ul class="list-group">
+                {% for student in students %}
+                <li class="list-group-item">
+                    <input name="students" type="checkbox" class="form-check-input me-1" value="{{student['Student_ID']}}">
+                    {{student['FirstName']}} {{student['LastName']}} - {{student['Email']}}
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="mb-3 mt-3">
+                <p>Group Name</p>
+                <input name="groupName" class="form-control" type="text" placeholder="Group Name..." required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="color:white; background-color:#141C52;">Submit</button>
+            <button type="reset" class="btn btn-primary" style="color:white; background-color:#8a704c;">Reset</button>
+        </div>
+    </form>
+    {% endif %}
+</div>
 {% endblock %}
