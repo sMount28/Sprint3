@@ -239,9 +239,18 @@ def postBatchStudents():
 
         student_exists = cursor.fetchone()
 
-        if not student_exists:
-        
+        if student_exists:
+            student_id = student_exists['Student_ID']
 
+            sql = 'select Student_ID from Student_Course where Student_ID=%s and Course_ID=%s'
+            cursor.execute(sql, [student_id, course_id])
+
+            student_in_class = cursor.fetchone()
+
+            if student_in_class:
+                continue
+
+        if not student_exists:
             # SQL insert using this student info
             insertNewStudent(fname, lname, email, db, cursor)
         
@@ -320,6 +329,20 @@ def addStudentProfile():
     cursor.execute(sql, [email])
 
     student_exists = cursor.fetchone()
+
+    if student_exists:
+        student_id = student_exists['Student_ID']
+
+        sql = 'select Student_ID from Student_Course where Student_ID=%s and Course_ID=%s'
+        cursor.execute(sql, [student_id, course_id])
+
+        student_in_class = cursor.fetchone()
+
+        if student_in_class:
+            stopDatabase(db, cursor)
+            session['msg'] = "Student already in class."
+
+            return redirect(url_for('professorHome', pid=session['student_id']))
 
     if not student_exists:
         # SQL insert using this student info
